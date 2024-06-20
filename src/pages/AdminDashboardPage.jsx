@@ -232,7 +232,6 @@ function Video({ video, index, moveVideo }) {
           <Img
             src={[video.photo, "https://picsum.photos/200/200"]}
             alt={video.title}
-            loader={<MyImageLoader />}
             className="w-30 h-16 mr-4 object-cover"
           />
           <span className="text-lg">{video.title}</span>

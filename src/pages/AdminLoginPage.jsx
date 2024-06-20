@@ -5,6 +5,7 @@ import * as yup from "yup";
 import MkdSDK from "../utils/MkdSDK";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../authContext";
+import { GlobalContext } from "../globalContext";
 
 const AdminLoginPage = () => {
   const schema = yup
@@ -15,18 +16,54 @@ const AdminLoginPage = () => {
     .required();
 
   const { dispatch } = React.useContext(AuthContext);
+  const { dispatch: globalDispatch } = React.useContext(GlobalContext);
   const navigate = useNavigate();
   const {
     register,
     handleSubmit,
     setError,
-    formState: { errors },
+    formState: { errors, isSubmitting },
   } = useForm({
     resolver: yupResolver(schema),
   });
 
   const onSubmit = async (data) => {
     let sdk = new MkdSDK();
+    try {
+      const result = await sdk.login(data.email, data.password, "admin");
+      // Dispatch the user's data to AuthContext
+      dispatch({
+        type: "LOGIN",
+        payload: {
+          token: result.token,
+          role: result.role
+        },
+      });
+      // Show a success message
+      globalDispatch({
+        type: "SNACKBAR",
+        payload: {
+          message: "Login successful",
+        },
+      });
+      // Navigate to the admin dashboard
+      navigate("/admin/dashboard");
+    } catch (err) {
+      if (err.message.includes("Password")) {
+        // Set error message to be displayed in the form
+        setError("password", {
+          type: "manual",
+          message: err.message,
+        });
+      }
+      if (err.message.includes("User")) {
+        // Set error message to be displayed in the form
+        setError("email", {
+          type: "manual",
+          message: err.message,
+        });
+      }
+    }
     //TODO
   };
 
@@ -77,7 +114,7 @@ const AdminLoginPage = () => {
           <input
             type="submit"
             className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-            value="Sign In"
+            value={isSubmitting ? "..." : "Sign In"}
           />
         </div>
       </form>

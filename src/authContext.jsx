@@ -4,10 +4,10 @@ import MkdSDK from "./utils/MkdSDK";
 export const AuthContext = React.createContext();
 
 const initialState = {
-  isAuthenticated: false,
+  isAuthenticated: localStorage.getItem("token") ? true : false,
   user: null,
-  token: null,
-  role: null,
+  token: localStorage.getItem("token") ? localStorage.getItem("token") : "",
+  role: localStorage.getItem("role") ? localStorage.getItem("role") : "",
 };
 
 const reducer = (state, action) => {
@@ -16,6 +16,9 @@ const reducer = (state, action) => {
       //TODO
       return {
         ...state,
+        isAuthenticated: true,
+        token: action.payload.token,
+        role: action.payload.role,
       };
     case "LOGOUT":
       localStorage.clear();
@@ -31,13 +34,15 @@ const reducer = (state, action) => {
 
 let sdk = new MkdSDK();
 
-export const tokenExpireError = (dispatch, errorMessage) => {
-  const role = localStorage.getItem("role");
-  if (errorMessage === "TOKEN_EXPIRED") {
-    dispatch({
-      type: "Logout",
-    });
+export const tokenExpireError = (dispatch, errorMessage, navigate) => {
+  const role = localStorage.getItem("role")
+    ? localStorage.getItem("role")
+    : "admin";
+  if (errorMessage === "TOKEN_EXPIRED" || errorMessage === "UNAUTHORIZED") {
     window.location.href = "/" + role + "/login";
+    dispatch({
+      type: "LOGOUT",
+    });
   }
 };
 
@@ -46,7 +51,19 @@ const AuthProvider = ({ children }) => {
 
   React.useEffect(() => {
     //TODO
-  }, []);
+    console.log("Auth Provider");
+    const checkToken = async () => {
+      try {
+        await sdk.check(localStorage.getItem("role"));
+      } catch (err) {
+        console.log(err.message);
+        tokenExpireError(dispatch, err.message);
+      }
+    };
+    if (localStorage.getItem("token")) {
+      checkToken();
+    }
+  }, [dispatch, state, sdk]);
 
   return (
     <AuthContext.Provider

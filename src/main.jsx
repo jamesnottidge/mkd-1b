@@ -31,12 +31,13 @@ function renderRoutes(role) {
 
 function Main() {
   const { state } = React.useContext(AuthContext);
+  console.log(state.isAuthenticated)
 
   return (
     <div className="h-full">
       <div className="flex w-full">
         <div className="w-full">
-          <div className="page-wrapper w-full py-10 px-5">
+          <div className="page-wrapper w-full">
             {!state.isAuthenticated
               ? renderRoutes("none")
               : renderRoutes(state.role)}

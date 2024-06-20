@@ -51,12 +51,12 @@ const AuthProvider = ({ children }) => {
 
   React.useEffect(() => {
     //TODO
-    console.log("Auth Provider");
+
     const checkToken = async () => {
       try {
         await sdk.check(localStorage.getItem("role"));
       } catch (err) {
-        console.log(err.message);
+   
         tokenExpireError(dispatch, err.message);
       }
     };

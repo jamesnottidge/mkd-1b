@@ -39,7 +39,7 @@ const AdminDashboardPage = () => {
           "PAGINATE"
         );
         setData(response.list);
-        console.log(response.list);
+    
         setTotalPages(response.num_pages);
       } catch (err) {
         setError(err.message);
